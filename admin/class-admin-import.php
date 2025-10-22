@@ -10,6 +10,7 @@ class GE_Admin_Import {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_post_ge_import_proveidors', array($this, 'handle_proveidors_import'));
         add_action('admin_post_ge_import_categories', array($this, 'handle_categories_import'));
+        add_action('admin_post_ge_import_events', array($this, 'handle_events_import'));
     }
     
     public function add_admin_menu() {
@@ -39,6 +40,12 @@ class GE_Admin_Import {
                             echo sprintf('S\'han importat <strong>%d proveïdors</strong> correctament.', $count);
                         } elseif ($type == 'categories') {
                             echo sprintf('S\'han importat <strong>%d categories</strong> correctament.', $count);
+                        } elseif ($type == 'esdeveniments') {
+                            echo sprintf('S\'han importat <strong>%d esdeveniments</strong> correctament.', $count);
+                            if (isset($_GET['errors'])) {
+                                $errors = intval($_GET['errors']);
+                                echo sprintf(' <em>(%d amb errors)</em>', $errors);
+                            }
                         }
                         ?>
                     </p>
@@ -154,6 +161,71 @@ Festes,festes,Festes populars,0,1,1,1,0,0</pre>
                 </div>
             </div>
             
+            <!-- Importar Esdeveniments -->
+            <div class="ge-admin-section">
+                <h2>📅 Importar Esdeveniments</h2>
+                <p>Importa esdeveniments massivament des d'un arxiu CSV.</p>
+                
+                <div class="ge-import-format">
+                    <h3>Format del CSV:</h3>
+                    <p>L'arxiu CSV ha de tenir les següents columnes (amb capçalera):</p>
+                    <div class="ge-csv-example">
+                        <code>Nom,Artista/DJ,Lloc Esdeveniment,Població,Provincia,Categoria,Data Inici,Data Fi,Codi Setmanal,Proveïdor link,Link,Informació Adicional,Prioridad</code>
+                    </div>
+                    <ul>
+                        <li><strong>Nom</strong> (obligatori): Nom de l'esdeveniment</li>
+                        <li><strong>Artista/DJ</strong> (obligatori): Nom de l'artista o DJ</li>
+                        <li><strong>Lloc Esdeveniment</strong> (obligatori): Lloc on es celebra</li>
+                        <li><strong>Població</strong> (obligatori): Població de l'esdeveniment</li>
+                        <li><strong>Provincia</strong> (obligatori): Província</li>
+                        <li><strong>Categoria</strong> (obligatori): Nom de la categoria</li>
+                        <li><strong>Data Inici</strong> (obligatori): Format: DD/MM/YYYY HH:MM</li>
+                        <li><strong>Data Fi</strong> (obligatori): Format: DD/MM/YYYY HH:MM</li>
+                        <li><strong>Codi Setmanal</strong> (obligatori): Codi de la setmana (ex: 20971)</li>
+                        <li><strong>Proveïdor link</strong> (opcional): Nom del proveïdor</li>
+                        <li><strong>Link</strong> (opcional): Enllaç web</li>
+                        <li><strong>Informació Adicional</strong> (opcional): Informació extra</li>
+                        <li><strong>Prioridad</strong> (opcional): 9 per patrocinat, buit per normal</li>
+                    </ul>
+                    
+                    <h4>Exemple:</h4>
+                    <pre>Nom,Artista/DJ,Lloc Esdeveniment,Població,Provincia,Categoria,Data Inici,Data Fi,Codi Setmanal,Proveïdor link,Link,Informació Adicional,Prioridad
+Festa Major,DJ Example,Plaça Major,Barcelona,Barcelona,Concert,25/10/2025 20:00,25/10/2025 23:00,20971,Proveïdor 1,https://example.com,,9</pre>
+                </div>
+                
+                <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data">
+                    <?php wp_nonce_field('ge_import_events_action', 'ge_import_events_nonce'); ?>
+                    <input type="hidden" name="action" value="ge_import_events">
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">
+                                <label for="events_csv">Arxiu CSV d'Esdeveniments</label>
+                            </th>
+                            <td>
+                                <input type="file" name="events_csv" id="events_csv" accept=".csv" required>
+                                <p class="description">Selecciona un arxiu CSV amb els esdeveniments a importar.</p>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <p class="submit">
+                        <input type="submit" name="submit" class="button button-primary" value="Importar Esdeveniments">
+                    </p>
+                </form>
+                
+                <div class="ge-info-box">
+                    <h4>⚠️ Notes importants:</h4>
+                    <ul>
+                        <li>Els esdeveniments s'importaran com a <strong>Publicats</strong></li>
+                        <li>Si la categoria no existeix, es crearà automàticament</li>
+                        <li>Si el proveïdor no existeix, el camp quedarà buit</li>
+                        <li>Els esdeveniments amb el mateix nom i data NO es duplicaran</li>
+                        <li>Les dates han d'estar en format DD/MM/YYYY HH:MM</li>
+                    </ul>
+                </div>
+            </div>
+            
             <!-- Instruccions -->
             <div class="ge-admin-section">
                 <h2>ℹ️ Instruccions</h2>
@@ -224,6 +296,23 @@ Festes,festes,Festes populars,0,1,1,1,0,0</pre>
                 margin-top: 15px;
                 padding-top: 15px;
                 border-top: 1px solid #ddd;
+            }
+            
+            .ge-info-box {
+                background: #fff3cd;
+                border-left: 4px solid #ffc107;
+                padding: 15px;
+                margin-top: 15px;
+            }
+            
+            .ge-info-box h4 {
+                margin-top: 0;
+                color: #856404;
+            }
+            
+            .ge-info-box ul {
+                margin: 10px 0;
+                padding-left: 20px;
             }
         </style>
         
@@ -382,6 +471,166 @@ Festes,festes,Festes populars,0,1,1,1,0,0</pre>
         
         wp_redirect(admin_url('admin.php?page=ge-import&import_success=1&type=categories&count=' . $imported));
         exit;
+    }
+    
+    public function handle_events_import() {
+        if (!current_user_can('manage_options')) {
+            wp_die('No tens permisos per fer aquesta acció.');
+        }
+        
+        check_admin_referer('ge_import_events_action', 'ge_import_events_nonce');
+        
+        if (!isset($_FILES['events_csv']) || $_FILES['events_csv']['error'] !== UPLOAD_ERR_OK) {
+            wp_redirect(admin_url('admin.php?page=ge-import&import_error=1&message=' . urlencode('Error al pujar l\'arxiu')));
+            exit;
+        }
+        
+        $file = $_FILES['events_csv']['tmp_name'];
+        $imported = 0;
+        $errors = array();
+        
+        if (($handle = fopen($file, 'r')) !== false) {
+            // Leer la cabecera
+            $header = fgetcsv($handle, 10000, ',');
+            
+            // Mapear las columnas (case insensitive)
+            $column_map = array();
+            foreach ($header as $index => $column_name) {
+                $clean_name = strtolower(trim($column_name));
+                $column_map[$clean_name] = $index;
+            }
+            
+            while (($data = fgetcsv($handle, 10000, ',')) !== false) {
+                if (empty($data[0]) || $data[0] == '﻿') continue; // Skip empty rows or BOM
+                
+                // Extraer datos basados en el mapeo de columnas
+                $nom = isset($column_map['nom']) ? sanitize_text_field($data[$column_map['nom']]) : '';
+                if (empty($nom)) continue;
+                
+                $artista = isset($column_map['artista/dj']) ? sanitize_text_field($data[$column_map['artista/dj']]) : '';
+                $lloc = isset($column_map['lloc esdeveniment']) ? sanitize_text_field($data[$column_map['lloc esdeveniment']]) : '';
+                $poblacio = isset($column_map['població']) ? sanitize_text_field($data[$column_map['població']]) : '';
+                $provincia = isset($column_map['provincia']) ? sanitize_text_field($data[$column_map['provincia']]) : '';
+                $categoria_nom = isset($column_map['categoria']) ? sanitize_text_field($data[$column_map['categoria']]) : '';
+                $data_inici_str = isset($column_map['data inici']) ? trim($data[$column_map['data inici']]) : '';
+                $data_fi_str = isset($column_map['data fi']) ? trim($data[$column_map['data fi']]) : '';
+                $codi_setmanal = isset($column_map['codi setmanal']) ? sanitize_text_field($data[$column_map['codi setmanal']]) : '';
+                $proveidor_nom = isset($column_map['proveïdor link']) ? sanitize_text_field($data[$column_map['proveïdor link']]) : '';
+                $link = isset($column_map['link']) ? esc_url_raw($data[$column_map['link']]) : '';
+                $info_adicional = isset($column_map['informació adicional']) ? sanitize_textarea_field($data[$column_map['informació adicional']]) : '';
+                $prioridad = isset($column_map['prioridad']) ? trim($data[$column_map['prioridad']]) : '';
+                
+                // Convertir fecha formato DD/MM/YYYY HH:MM a formato MySQL
+                $data_inici = $this->parse_date($data_inici_str);
+                $hora_inici = $this->parse_time($data_inici_str);
+                $data_final = $this->parse_date($data_fi_str);
+                $hora_final = $this->parse_time($data_fi_str);
+                
+                if (!$data_inici || !$hora_inici || !$data_final || !$hora_final) {
+                    $errors[] = "Fecha inválida para: $nom";
+                    continue;
+                }
+                
+                // Comprobar si ya existe
+                $existing = get_posts(array(
+                    'post_type' => 'esdeveniment',
+                    'title' => $nom,
+                    'posts_per_page' => 1,
+                    'post_status' => 'any',
+                    'meta_query' => array(
+                        array(
+                            'key' => '_ge_data_inici',
+                            'value' => $data_inici,
+                            'compare' => '='
+                        )
+                    )
+                ));
+                
+                if (!empty($existing)) continue; // Skip duplicates
+                
+                // Crear evento
+                $post_id = wp_insert_post(array(
+                    'post_title' => $nom,
+                    'post_type' => 'esdeveniment',
+                    'post_status' => 'publish'
+                ));
+                
+                if (is_wp_error($post_id)) {
+                    $errors[] = "Error al crear: $nom";
+                    continue;
+                }
+                
+                // Guardar meta datos
+                update_post_meta($post_id, '_ge_artista', $artista);
+                update_post_meta($post_id, '_ge_nom_espectacle', $nom);
+                update_post_meta($post_id, '_ge_lloc_esdeveniment', $lloc);
+                update_post_meta($post_id, '_ge_poblacio', $poblacio);
+                update_post_meta($post_id, '_ge_provincia', $provincia);
+                update_post_meta($post_id, '_ge_data_inici', $data_inici);
+                update_post_meta($post_id, '_ge_hora_inici', $hora_inici);
+                update_post_meta($post_id, '_ge_data_final', $data_final);
+                update_post_meta($post_id, '_ge_hora_final', $hora_final);
+                update_post_meta($post_id, '_ge_codi_setmanal', $codi_setmanal);
+                update_post_meta($post_id, '_ge_enllac_web', $link);
+                update_post_meta($post_id, '_ge_info_adicional', $info_adicional);
+                
+                // Marcar como patrocinado si prioridad es 9
+                $patrocinat = ($prioridad == '9') ? '1' : '0';
+                update_post_meta($post_id, '_ge_patrocinat', $patrocinat);
+                
+                // Asignar categoría (crear si no existe)
+                if (!empty($categoria_nom)) {
+                    $term = term_exists($categoria_nom, 'categoria_esdeveniment');
+                    if (!$term) {
+                        $term = wp_insert_term($categoria_nom, 'categoria_esdeveniment');
+                    }
+                    if (!is_wp_error($term)) {
+                        wp_set_object_terms($post_id, intval($term['term_id']), 'categoria_esdeveniment');
+                    }
+                }
+                
+                // Buscar y asignar proveïdor
+                if (!empty($proveidor_nom)) {
+                    $proveidor = get_page_by_title($proveidor_nom, OBJECT, 'proveidor');
+                    if ($proveidor) {
+                        update_post_meta($post_id, '_ge_proveidor_id', $proveidor->ID);
+                    }
+                }
+                
+                $imported++;
+            }
+            
+            fclose($handle);
+        }
+        
+        $redirect_url = admin_url('admin.php?page=ge-import&import_success=1&type=esdeveniments&count=' . $imported);
+        if (!empty($errors)) {
+            $redirect_url .= '&errors=' . count($errors);
+        }
+        
+        wp_redirect($redirect_url);
+        exit;
+    }
+    
+    private function parse_date($date_string) {
+        // Format: DD/MM/YYYY HH:MM
+        if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})/', $date_string, $matches)) {
+            $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+            $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+            $year = $matches[3];
+            return "$year-$month-$day";
+        }
+        return false;
+    }
+    
+    private function parse_time($datetime_string) {
+        // Format: DD/MM/YYYY HH:MM
+        if (preg_match('/(\d{1,2}):(\d{2})/', $datetime_string, $matches)) {
+            $hour = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+            $minute = $matches[2];
+            return "$hour:$minute";
+        }
+        return false;
     }
 }
 
