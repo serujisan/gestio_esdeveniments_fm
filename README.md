@@ -58,7 +58,19 @@ Plugin de WordPress per gestionar esdeveniments i espectacles amb formulari púb
 
 ## Ús
 
-### Shortcodes
+### Pàgina de Shortcodes amb Previsualització
+
+El plugin inclou una pàgina d'administració dedicada als shortcodes amb previsualització en temps real:
+
+1. Ves a **Esdeveniments > Shortcodes**
+2. Veuràs tots els shortcodes disponibles amb:
+   - El codi del shortcode amb botó de copiar
+   - Previsualització en directe de com es veurà
+   - Instruccions d'ús
+   - Exemples pràctics
+   - Enllaços ràpids a gestió
+
+### Shortcodes Disponibles
 
 #### Formulari per enviar esdeveniments
 ```
