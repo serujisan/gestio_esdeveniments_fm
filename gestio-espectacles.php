@@ -42,6 +42,7 @@ class GestioEspectacles {
         require_once GE_PLUGIN_DIR . 'admin/class-admin-proveidors.php';
         require_once GE_PLUGIN_DIR . 'admin/class-admin-categories.php';
         require_once GE_PLUGIN_DIR . 'admin/class-admin-shortcodes.php';
+        require_once GE_PLUGIN_DIR . 'admin/class-admin-import.php';
     }
     
     private function init_hooks() {

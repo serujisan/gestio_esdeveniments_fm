@@ -1,0 +1,6 @@
+nom,slug,descripcio,nom_artista,municipio,any,que_hacer,concierto,notas
+Concerts,concerts,Concerts de música en viu,1,1,1,0,1,0
+Teatre,teatre,Obres de teatre,1,1,1,1,0,1
+Festes,festes,Festes populars,0,1,1,1,0,0
+Dansa,dansa,Espectacles de dansa,1,1,1,0,0,1
+Cinema,cinema,Projeccions de cinema,0,1,1,1,0,0

@@ -50,6 +50,13 @@ Plugin de WordPress per gestionar esdeveniments i espectacles amb formulari púb
   - Concert
   - Notes
 
+### Importació CSV
+- Importació massiva de proveïdors des de CSV
+- Importació massiva de categories des de CSV
+- Plantilles descarregables des de l'admin
+- Validació automàtica de dades
+- Evita duplicats automàticament
+
 ## Instal·lació
 
 1. Puja la carpeta `gestio-espectacles` al directori `/wp-content/plugins/`
@@ -88,7 +95,13 @@ El plugin inclou una pàgina d'administració dedicada als shortcodes amb previs
 
 2. **Crear Categories**: Ves a `Esdeveniments > Categories` per crear categories i configurar els camps per generar text.
 
-3. **Afegir Pàgines**: El plugin crea automàticament una pàgina "Esdeveniments" en activar-se. Pots crear una altra pàgina amb el shortcode del formulari per als proveïdors.
+3. **Importar Dades Inicials** (Opcional): Ves a `Esdeveniments > Importar CSV` per importar proveïdors i categories de manera massiva:
+   - Descarrega les plantilles CSV
+   - Omple les dades
+   - Puja els arxius per importar-los automàticament
+   - Les plantilles d'exemple es troben a la carpeta `examples/` del plugin
+
+4. **Afegir Pàgines**: El plugin crea automàticament una pàgina "Esdeveniments" en activar-se. Pots crear una altra pàgina amb el shortcode del formulari per als proveïdors.
 
 ### Per als Proveïdors
 
