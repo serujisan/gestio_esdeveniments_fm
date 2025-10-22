@@ -1,0 +1,24 @@
+# WordPress
+.DS_Store
+*.log
+*.sql
+*.sqlite
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+npm-debug.log
+
+# Composer
+vendor/
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
