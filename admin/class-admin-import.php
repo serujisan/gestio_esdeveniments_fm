@@ -67,19 +67,20 @@ class GE_Admin_Import {
                     <h3>Format del CSV:</h3>
                     <p>L'arxiu CSV ha de tenir les següents columnes (amb capçalera):</p>
                     <div class="ge-csv-example">
-                        <code>nom,email_usuari,actiu</code>
+                        <code>nom,link_wordpress,email_usuari,actiu</code>
                     </div>
                     <ul>
                         <li><strong>nom</strong> (obligatori): Nom del proveïdor</li>
+                        <li><strong>link_wordpress</strong> (opcional): Enllaç a la pàgina del proveïdor</li>
                         <li><strong>email_usuari</strong> (opcional): Email de l'usuari WordPress a associar</li>
                         <li><strong>actiu</strong> (opcional): 1 per actiu, 0 per inactiu (per defecte: 1)</li>
                     </ul>
                     
                     <h4>Exemple:</h4>
-                    <pre>nom,email_usuari,actiu
-Proveïdor 1,usuari1@example.com,1
-Proveïdor 2,usuari2@example.com,1
-Proveïdor 3,,0</pre>
+                    <pre>nom,link_wordpress,email_usuari,actiu
+Proveïdor 1,https://example.com/proveidor1,usuari1@example.com,1
+Proveïdor 2,https://example.com/proveidor2,usuari2@example.com,1
+Proveïdor 3,,,0</pre>
                 </div>
                 
                 <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data">
@@ -318,10 +319,10 @@ Festa Major,DJ Example,Plaça Major,Barcelona,Barcelona,Concert,25/10/2025 20:00
         
         <script>
         function downloadProveidorsTemplate() {
-            var csv = 'nom,email_usuari,actiu\n';
-            csv += 'Proveïdor Exemple 1,usuari1@example.com,1\n';
-            csv += 'Proveïdor Exemple 2,usuari2@example.com,1\n';
-            csv += 'Proveïdor Exemple 3,,0\n';
+            var csv = 'nom,link_wordpress,email_usuari,actiu\\n';
+            csv += 'Proveïdor Exemple 1,https://example.com/proveidor1,usuari1@example.com,1\\n';
+            csv += 'Proveïdor Exemple 2,https://example.com/proveidor2,usuari2@example.com,1\\n';
+            csv += 'Proveïdor Exemple 3,,,0\\n';
             
             downloadCSV(csv, 'plantilla_proveidors.csv');
         }
@@ -370,12 +371,35 @@ Festa Major,DJ Example,Plaça Major,Barcelona,Barcelona,Concert,25/10/2025 20:00
         if (($handle = fopen($file, 'r')) !== false) {
             $header = fgetcsv($handle, 1000, ',');
             
+            // Mapear columnas
+            $column_map = array();
+            foreach ($header as $index => $column_name) {
+                $clean_name = strtolower(trim(str_replace(array('\xEF\xBB\xBF', '\ufeff'), '', $column_name)));
+                $column_map[$clean_name] = $index;
+            }
+            
             while (($data = fgetcsv($handle, 1000, ',')) !== false) {
                 if (empty($data[0])) continue; // Skip empty rows
                 
-                $nom = sanitize_text_field($data[0]);
-                $email_usuari = isset($data[1]) ? sanitize_email($data[1]) : '';
-                $actiu = isset($data[2]) && $data[2] == '1' ? '1' : '1'; // Default actiu
+                // Soporte para ambos formatos: nuevo (con link) y antiguo (sin link)
+                $nom = isset($column_map['name']) ? sanitize_text_field($data[$column_map['name']]) : sanitize_text_field($data[0]);
+                if (empty($nom)) continue;
+                
+                $link_wordpress = '';
+                $email_usuari = '';
+                $actiu = '1';
+                
+                // Formato nuevo con link
+                if (isset($column_map['link wordpress'])) {
+                    $link_wordpress = isset($data[$column_map['link wordpress']]) ? esc_url_raw($data[$column_map['link wordpress']]) : '';
+                    $email_usuari = isset($column_map['email_usuari']) && isset($data[$column_map['email_usuari']]) ? sanitize_email($data[$column_map['email_usuari']]) : '';
+                    $actiu = isset($column_map['actiu']) && isset($data[$column_map['actiu']]) && $data[$column_map['actiu']] != 'Si' ? '0' : '1';
+                }
+                // Formato antiguo sin link
+                else {
+                    $email_usuari = isset($data[1]) ? sanitize_email($data[1]) : '';
+                    $actiu = isset($data[2]) && $data[2] == '0' ? '0' : '1';
+                }
                 
                 // Check if proveidor already exists
                 $existing = get_page_by_title($nom, OBJECT, 'proveidor');
@@ -390,6 +414,11 @@ Festa Major,DJ Example,Plaça Major,Barcelona,Barcelona,Concert,25/10/2025 20:00
                 
                 if (!is_wp_error($post_id)) {
                     update_post_meta($post_id, '_ge_proveidor_actiu', $actiu);
+                    
+                    // Guardar link de WordPress
+                    if (!empty($link_wordpress)) {
+                        update_post_meta($post_id, '_ge_proveidor_link_wordpress', $link_wordpress);
+                    }
                     
                     // Associate with WordPress user if email provided
                     if (!empty($email_usuari)) {

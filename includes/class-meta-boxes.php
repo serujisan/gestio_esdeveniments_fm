@@ -182,12 +182,19 @@ class GE_Meta_Boxes {
         
         $wp_user_id = get_post_meta($post->ID, '_ge_proveidor_wp_user_id', true);
         $actiu = get_post_meta($post->ID, '_ge_proveidor_actiu', true);
+        $link_wordpress = get_post_meta($post->ID, '_ge_proveidor_link_wordpress', true);
         
         // Obtenir usuaris de WordPress
         $users = get_users(array('orderby' => 'display_name'));
         
         ?>
         <div class="ge-meta-box">
+            <p>
+                <label for="ge_proveidor_link_wordpress"><strong>Link WordPress</strong></label><br>
+                <input type="url" name="ge_proveidor_link_wordpress" id="ge_proveidor_link_wordpress" value="<?php echo esc_attr($link_wordpress); ?>" style="width: 100%;">
+                <small>Enllaç a la pàgina del proveïdor</small>
+            </p>
+            
             <p>
                 <label for="ge_proveidor_wp_user_id"><strong>Usuari WordPress Associat</strong></label><br>
                 <select name="ge_proveidor_wp_user_id" id="ge_proveidor_wp_user_id" style="width: 100%;">
@@ -270,6 +277,10 @@ class GE_Meta_Boxes {
         
         if (!current_user_can('edit_post', $post_id)) {
             return;
+        }
+        
+        if (isset($_POST['ge_proveidor_link_wordpress'])) {
+            update_post_meta($post_id, '_ge_proveidor_link_wordpress', esc_url_raw($_POST['ge_proveidor_link_wordpress']));
         }
         
         if (isset($_POST['ge_proveidor_wp_user_id'])) {

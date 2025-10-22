@@ -1,4 +1,4 @@
-nom,email_usuari,actiu
-Proveïdor Exemple 1,usuari1@example.com,1
-Proveïdor Exemple 2,usuari2@example.com,1
-Proveïdor Exemple 3,,0
+nom,link_wordpress,email_usuari,actiu
+Proveïdor Exemple 1,https://example.com/proveidor1,usuari1@example.com,1
+Proveïdor Exemple 2,https://example.com/proveidor2,usuari2@example.com,1
+Proveïdor Exemple 3,,,0

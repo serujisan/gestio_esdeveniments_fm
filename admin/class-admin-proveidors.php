@@ -74,6 +74,16 @@ class GE_Admin_Proveidors {
                         
                         <tr>
                             <th scope="row">
+                                <label for="proveidor_link">Link WordPress</label>
+                            </th>
+                            <td>
+                                <input type="url" name="proveidor_link" id="proveidor_link" class="regular-text" placeholder="https://example.com/proveidor">
+                                <p class="description">Enllaç a la pàgina del proveïdor</p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row">
                                 <label for="proveidor_wp_user">Usuari WordPress Associat</label>
                             </th>
                             <td>
@@ -195,6 +205,10 @@ class GE_Admin_Proveidors {
         $post_id = wp_insert_post($post_data);
         
         if (!is_wp_error($post_id)) {
+            if (isset($_POST['proveidor_link']) && !empty($_POST['proveidor_link'])) {
+                update_post_meta($post_id, '_ge_proveidor_link_wordpress', esc_url_raw($_POST['proveidor_link']));
+            }
+            
             if (isset($_POST['proveidor_wp_user']) && !empty($_POST['proveidor_wp_user'])) {
                 update_post_meta($post_id, '_ge_proveidor_wp_user_id', intval($_POST['proveidor_wp_user']));
             }
