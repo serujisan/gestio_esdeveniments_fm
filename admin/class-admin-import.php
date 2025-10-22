@@ -479,12 +479,12 @@ Festa Major,DJ Example,Plaça Major,Barcelona,Barcelona,Concert,25/10/2025 20:00
                     
                     // Set meta fields for text generation
                     $meta_fields = array(
-                        'ge_cat_nom_artista' => isset($data[3]) && $data[3] == '1' ? '1' : '0',
-                        'ge_cat_municipio' => isset($data[4]) && $data[4] == '1' ? '1' : '0',
-                        'ge_cat_any' => isset($data[5]) && $data[5] == '1' ? '1' : '0',
-                        'ge_cat_que_hacer' => isset($data[6]) && $data[6] == '1' ? '1' : '0',
-                        'ge_cat_concierto' => isset($data[7]) && $data[7] == '1' ? '1' : '0',
-                        'ge_cat_notas' => isset($data[8]) && $data[8] == '1' ? '1' : '0'
+                        'nom_artista' => isset($data[3]) && $data[3] == '1' ? '1' : '0',
+                        'municipio' => isset($data[4]) && $data[4] == '1' ? '1' : '0',
+                        'any' => isset($data[5]) && $data[5] == '1' ? '1' : '0',
+                        'que_hacer' => isset($data[6]) && $data[6] == '1' ? '1' : '0',
+                        'concierto' => isset($data[7]) && $data[7] == '1' ? '1' : '0',
+                        'notas' => isset($data[8]) && $data[8] == '1' ? '1' : '0'
                     );
                     
                     foreach ($meta_fields as $key => $value) {
